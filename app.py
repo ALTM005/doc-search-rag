@@ -2,11 +2,11 @@ import os
 import streamlit as st
 from cassandra.cluster import Cluster
 from cassandra.auth import PlainTextAuthProvider
-
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_community.vectorstores import Cassandra
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.chains import RetrievalQA
 
 st.set_page_config(page_title="Chat with PDF", page_icon="📄")
 
@@ -68,3 +68,37 @@ if uploaded_file:
 
             st.session_state.vectorstore = vectorstore
             st.success("✅ Document Indexed! You can now ask questions.")
+
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+
+    if prompt := st.chat_input("Ask a question about the PDF..."):
+        # Display user message immediately
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        with st.chat_message("user"):
+            st.markdown(prompt)
+
+        # Generate AI Response
+        with st.chat_message("assistant"):
+            with st.spinner("Thinking..."):
+                if "vectorstore" in st.session_state:
+                    retriever = st.session_state.vectorstore.as_retriever(search_kwargs={"k": 3})
+                    
+                    qa_chain = RetrievalQA.from_chain_type(
+                        llm=ChatOpenAI(temperature=0.1), 
+                        chain_type="stuff", 
+                        retriever=retriever
+                    )
+                    
+                    response = qa_chain.run(prompt)
+                else:
+                    response = "⚠️ Please upload a PDF first to start chatting!"
+                
+                st.markdown(response)
+        
+        st.session_state.messages.append({"role": "assistant", "content": response})
+
+    # Cleanup temp file
+    if os.path.exists(temp_path):
+        os.remove(temp_path)
