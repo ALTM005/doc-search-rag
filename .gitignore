@@ -1,0 +1,17 @@
+# Secrets and Keys
+bundle.zip
+secure-connect-*.zip
+.env
+secrets.toml
+
+# Python junk
+__pycache__/
+*.pyc
+venv/
+.DS_Store
+
+# Streamlit specific
+.streamlit/
+
+# Temp files created by the app
+temp_*
