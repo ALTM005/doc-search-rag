@@ -50,11 +50,11 @@ if uploaded_file:
         f.write(uploaded_file.getbuffer())
 
     if "vectorstore" not in st.session_state:
-        with st.spinner("🧠 Indexing document..."):
+        with st.spinner("🧠 Indexing document... this might take a moment"):
+            
             # Load the PDF
             loader = PyPDFLoader(temp_path)
             docs = loader.load()
-
             splitter = RecursiveCharacterTextSplitter(chunk_size=400, chunk_overlap=30)
             splits = splitter.split_documents(docs)
 
@@ -65,6 +65,6 @@ if uploaded_file:
                 keyspace=ASTRA_DB_KEYSPACE,
                 table_name='pdf_chat_history', 
             )
-            
+
             st.session_state.vectorstore = vectorstore
-            st.success("✅ Document Indexed!")
+            st.success("✅ Document Indexed! You can now ask questions.")
