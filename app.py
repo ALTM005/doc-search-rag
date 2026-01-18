@@ -49,4 +49,22 @@ if uploaded_file:
     with open(temp_path, "wb") as f:
         f.write(uploaded_file.getbuffer())
 
-    st.write(f"✅ File uploaded: {uploaded_file.name}")
+    if "vectorstore" not in st.session_state:
+        with st.spinner("🧠 Indexing document..."):
+            # Load the PDF
+            loader = PyPDFLoader(temp_path)
+            docs = loader.load()
+
+            splitter = RecursiveCharacterTextSplitter(chunk_size=400, chunk_overlap=30)
+            splits = splitter.split_documents(docs)
+
+            vectorstore = Cassandra.from_documents(
+                documents=splits,
+                embedding=OpenAIEmbeddings(),
+                session=session,
+                keyspace=ASTRA_DB_KEYSPACE,
+                table_name='pdf_chat_history', 
+            )
+            
+            st.session_state.vectorstore = vectorstore
+            st.success("✅ Document Indexed!")
