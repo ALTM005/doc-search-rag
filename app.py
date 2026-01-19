@@ -11,7 +11,7 @@ from langchain.chains import RetrievalQA
 st.set_page_config(page_title="Chat with PDF", page_icon="📄")
 
 with st.sidebar:
-    st.header("🔑 Configuration")
+    st.header("Configuration")
     OPENAI_API_KEY = st.text_input("OpenAI API Key", type="password")
     ASTRA_DB_TOKEN = st.text_input("Astra DB Token (AstraCS...)", type="password")
     ASTRA_DB_BUNDLE_PATH = st.text_input("Path to Bundle.zip", value="bundle.zip")
@@ -34,10 +34,10 @@ def get_astra_session(token, bundle_path):
 try:
     session = get_astra_session(ASTRA_DB_TOKEN, ASTRA_DB_BUNDLE_PATH)
 except Exception as e:
-    st.error(f"❌ Connection Failed: {e}")
+    st.error(f"Connection Failed: {e}")
     st.stop()
 
-st.title("📄 Chat with PDF")
+st.title("Chat with PDF")
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -50,7 +50,7 @@ if uploaded_file:
         f.write(uploaded_file.getbuffer())
 
     if "vectorstore" not in st.session_state:
-        with st.spinner("🧠 Indexing document... this might take a moment"):
+        with st.spinner("Indexing document... this might take a moment"):
             
             # Load the PDF
             loader = PyPDFLoader(temp_path)
@@ -67,7 +67,7 @@ if uploaded_file:
             )
 
             st.session_state.vectorstore = vectorstore
-            st.success("✅ Document Indexed! You can now ask questions.")
+            st.success("Document Indexed! You can now ask questions.")
 
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
